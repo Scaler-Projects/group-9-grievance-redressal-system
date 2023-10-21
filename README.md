@@ -1,2 +1,2 @@
 # group-9-grievance-redressal-system
-Public Grievance Redressal Syste
+Public Grievance Redressal System
