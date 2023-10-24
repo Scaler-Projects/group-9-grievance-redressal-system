@@ -1,0 +1,190 @@
+openapi: 3.1.0
+info:
+  title: User Management API
+  description: User management micro service for a public grievance redressal system
+  version: v1
+tags:
+  - name: users
+    description: all about users
+paths:
+  /users:
+    get:
+      tags:
+        - users
+      summary: Get all users
+      description: Returns a list of users
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+  /users/{UserId}:
+    get:
+      tags:
+        - users
+      summary: Get user by ID
+      description: Returns a user
+      operationId: getUserDetails
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            format: int64
+
+      responses:
+        '200':
+          description: Succesful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags:
+        - users
+      summary: Update user
+      description: Update user details and return a user
+      operationId: updateUserDetails
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+    delete:
+      tags:
+        - users
+      summary: Delete user
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No content
+
+  /users/{userId}/roles:
+    post:
+      tags:
+        - users
+      summary: Set user roles by ID
+      description: Returns a user
+      operationId: setUserRoles
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /auth/signup:
+    post:
+      tags:
+        - auth
+        - users
+      summary: Create a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Created
+
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Log in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Log out
+  /auth/validate:
+    post:
+      tags:
+        - auth
+      summary: Validate a token
+  /roles:
+    post:
+      tags:
+        - roles
+      summary: Create a new role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Session:
+      type: object
+      properties:
+        token:
+          type: string
+        user_id:
+          type: integer
+        sessionStatus:
+          type: string
+
+
