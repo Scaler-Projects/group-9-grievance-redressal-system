@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
+@RequestMapping("/admins")
 public interface AdminOperations {
     @GetMapping("id")
     public GenericAdminDto getAdminById(@PathVariable("id") Long id);
