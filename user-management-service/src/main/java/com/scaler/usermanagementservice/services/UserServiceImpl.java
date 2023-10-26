@@ -29,4 +29,11 @@ public class UserServiceImpl implements UserService{
         Optional<User> optionalUser = this.userRepository.findById(userId);
         return optionalUser.map(UserDto::from).orElse(null);
     }
+
+    @Override
+    public UserDto updateUserDetails(Long userId, UserDto userDto) {
+        Optional<User> optionalUser = this.userRepository.findById(userId);
+
+        return null;
+    }
 }
