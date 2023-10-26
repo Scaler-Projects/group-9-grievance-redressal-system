@@ -6,6 +6,7 @@ import com.scaler.usermanagementservice.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,5 +22,11 @@ public class UserServiceImpl implements UserService{
         return users.stream()
                 .map(UserDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDto getUserDetails(Long userId) {
+        Optional<User> optionalUser = this.userRepository.findById(userId);
+        return optionalUser.map(UserDto::from).orElse(null);
     }
 }
