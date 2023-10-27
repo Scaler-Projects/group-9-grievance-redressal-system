@@ -1,5 +1,7 @@
 package com.scaler.usermanagementservice.controllers;
 
+import com.scaler.usermanagementservice.exceptions.EmailAlreadyExistsException;
+import com.scaler.usermanagementservice.exceptions.NotFoundException;
 import com.scaler.usermanagementservice.dtos.UserDto;
 import com.scaler.usermanagementservice.services.UserService;
 import org.springframework.http.HttpStatus;
@@ -28,9 +30,16 @@ public class UserController {
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-    @PutMapping("/user_id")
-    public ResponseEntity<UserDto> updateUserDetails(@PathVariable("user_id") Long user_id, @RequestBody UserDto userDto) {
+    @PutMapping("/{user_id}")
+    public ResponseEntity<UserDto> updateUserDetails(@PathVariable("user_id") Long user_id, @RequestBody UserDto userDto)
+            throws NotFoundException, EmailAlreadyExistsException {
         UserDto updatedUser = this.userService.updateUserDetails(user_id, userDto);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{user_id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable("user_id") Long user_id) throws NotFoundException {
+        this.userService.deleteUser(user_id);
+        return ResponseEntity.ok(null);
     }
 }
