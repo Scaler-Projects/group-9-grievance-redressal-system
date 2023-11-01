@@ -1,25 +1,25 @@
 package com.scaler.usermanagementservice.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "users")
+@AllArgsConstructor
+@NoArgsConstructor
 public class User extends BaseModel {
     private String username;
-    private String password;
 
-    @Enumerated(value = EnumType.ORDINAL)
+    private String password;
     private Role role;
+
     private String email;
     private String phone;
-    private int created_at;
-    private int updated_at;
+    private Long created_at;
+    private Long updated_at;
 }

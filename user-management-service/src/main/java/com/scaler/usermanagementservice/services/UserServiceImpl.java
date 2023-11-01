@@ -3,12 +3,14 @@ package com.scaler.usermanagementservice.services;
 import com.scaler.usermanagementservice.exceptions.EmailAlreadyExistsException;
 import com.scaler.usermanagementservice.exceptions.NotFoundException;
 import com.scaler.usermanagementservice.dtos.UserDto;
+import com.scaler.usermanagementservice.helpers.Convert;
+import com.scaler.usermanagementservice.models.Role;
 import com.scaler.usermanagementservice.models.User;
 import com.scaler.usermanagementservice.repositories.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,12 +18,13 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository,
-                           BCryptPasswordEncoder bCryptPasswordEncoder) {
+                           PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
     @Override
     public List<UserDto> getAllUsers() {
@@ -67,7 +70,7 @@ public class UserServiceImpl implements UserService{
         }
 
         if (userDto.getPassword() != null) {
-            String updatedPassword = bCryptPasswordEncoder.encode(userDto.getPassword());
+            String updatedPassword = passwordEncoder.encode(userDto.getPassword());
             user.setPassword(updatedPassword);
         }
 
@@ -75,6 +78,32 @@ public class UserServiceImpl implements UserService{
                 && userRepository.existsByEmail(userDto.getEmail()))
             throw new EmailAlreadyExistsException("Email is already in use");
 
-        user.setUpdated_at((int) new Date().getTime() / 1000);
+        user.setUpdated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
+    }
+
+    @Override
+    public void initRolesAndUsers() {
+
+        User adminUser = new User();
+        adminUser.setUsername("superAdmin");
+        adminUser.setEmail("superAdmin@email.com");
+        adminUser.setPassword(passwordEncoder.encode("admin123"));
+        adminUser.setPhone("5555555555555");
+        adminUser.setRole(Role.ADMIN);
+        adminUser.setCreated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
+        adminUser.setUpdated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
+
+        userRepository.save(adminUser);
+
+        User defaultUser = new User();
+        defaultUser.setUsername("defaultUser");
+        defaultUser.setEmail("defaultUser@email.com");
+        defaultUser.setPassword(passwordEncoder.encode("default123"));
+        defaultUser.setPhone("44444444444444");
+        defaultUser.setRole(Role.USER);
+        defaultUser.setCreated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
+        defaultUser.setUpdated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
+
+        userRepository.save(defaultUser);
     }
 }
