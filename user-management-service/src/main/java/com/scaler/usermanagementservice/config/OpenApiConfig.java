@@ -1,5 +1,6 @@
 package com.scaler.usermanagementservice.config;
 
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,9 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info().title("User Management API")
                         .description("This is a sample User Management Service")
-                        .version("1.0.0"));
+                        .version("1.0.0"))
+                .externalDocs(new ExternalDocumentation()
+                        .description("User Management  API")
+                        .url("http://localhost:8081/"));
     }
 }
