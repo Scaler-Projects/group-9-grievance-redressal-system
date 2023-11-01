@@ -15,4 +15,6 @@ public interface UserService {
     UserDto updateUserDetails(Long userId, UserDto userDto) throws NotFoundException, EmailAlreadyExistsException;
 
     void deleteUser(Long userId) throws NotFoundException;
+
+    void initRolesAndUsers();
 }

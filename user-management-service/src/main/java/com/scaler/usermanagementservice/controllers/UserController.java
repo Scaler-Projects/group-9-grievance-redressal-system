@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 @RestController
@@ -17,6 +18,11 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostConstruct
+    public void initRolesAndUsers() {
+        this.userService.initRolesAndUsers();
     }
 
     @GetMapping
@@ -42,4 +48,6 @@ public class UserController {
         this.userService.deleteUser(user_id);
         return ResponseEntity.ok(null);
     }
+
+
 }
