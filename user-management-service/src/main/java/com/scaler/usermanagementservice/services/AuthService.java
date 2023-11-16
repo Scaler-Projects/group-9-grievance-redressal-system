@@ -30,7 +30,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserDto signup(UserSignupRequestDto signupDto) throws Exception {
+    public UserDto signup(UserSignupRequestDto signupDto) {
 
         if (userRepository.existsByEmail(signupDto.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists.");
@@ -56,30 +56,39 @@ public class AuthService {
     }
 
 
-    public void setUserRole(UserRoleDto userRoleDto) {
+
+    private Role findAdminRole() {
+        return findRole("Admin");
+    }
+
+    private Role findUserRole() {
+        return findRole("User");
+    }
+
+    private Role findRole(String roleName) {
+        Optional<Role> optionalRole = roleRepository.findRoleByName(roleName);
+        Role role;
+        if (optionalRole.isEmpty()) {
+            role = new Role(roleName);
+            roleRepository.save(role);
+        } else {
+            role = optionalRole.get();
+        }
+        return role;
+    }
+
+    public void setUserRoleToAdmin(UserRoleDto userRoleDto) {
         Optional<User> optionalUser = userRepository.findById(userRoleDto.getUserId());
 
         if (optionalUser.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
 
-        Set<Role> roles = new HashSet<>();
         User user = optionalUser.get();
-        Role role = findUserRole();
-        roles.add(role);
-        user.setRoles(roles);
-        userRepository.save(user);
-    }
+        Role adminRole = findAdminRole();
 
-    private Role findUserRole() {
-        Optional<Role> optionalRole = roleRepository.findRoleByName("User");
-        Role role;
-        if (optionalRole.isEmpty()) {
-            role = new Role("User");
-            roleRepository.save(role);
-        } else {
-            role = optionalRole.get();
-        }
-        return role;
+        user.getRoles().add(adminRole);
+
+        userRepository.save(user);
     }
 }

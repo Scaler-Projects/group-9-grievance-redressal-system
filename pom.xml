@@ -7,15 +7,26 @@
   <groupId>com.grievance-redressal-system.app</groupId>
   <artifactId>grievance-redressal-system</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
   <name>grievance-redressal-system</name>
   <url>http://www.example.com</url>
+
+  <modules>
+    <module>admin-management-service</module>
+    <module>analytics-service</module>
+    <module>grievance-management-service</module>
+    <module>notification-service</module>
+    <module>user-management-service</module>
+    <module>discovery-service</module>
+    <module>gateway-service</module>
+  </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <spring-cloud.version>2022.0.1</spring-cloud.version>
+    <spring-cloud.version>2022.0.4</spring-cloud.version>
   </properties>
 
   <dependencyManagement>
@@ -23,7 +34,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.0.9</version>
+        <version>3.1.5</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -44,6 +55,10 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
     </dependency>
   </dependencies>
@@ -54,7 +69,7 @@
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
-          <version>3.1.2</version>
+          <version>3.1.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
