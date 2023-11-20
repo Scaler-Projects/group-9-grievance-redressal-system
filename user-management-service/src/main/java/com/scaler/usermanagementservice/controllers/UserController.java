@@ -3,12 +3,12 @@ package com.scaler.usermanagementservice.controllers;
 import com.scaler.usermanagementservice.dtos.UserDto;
 import com.scaler.usermanagementservice.exceptions.NotFoundException;
 import com.scaler.usermanagementservice.services.UserService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 @RestController
@@ -26,7 +26,7 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAuthority('ROLE_Admin')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = this.userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);

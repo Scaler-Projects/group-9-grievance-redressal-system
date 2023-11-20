@@ -30,7 +30,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserDto signup(UserSignupRequestDto signupDto) throws Exception {
+    public UserDto signup(UserSignupRequestDto signupDto) {
 
         if (userRepository.existsByEmail(signupDto.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists.");
@@ -40,14 +40,13 @@ public class AuthService {
             throw new UsernameAlreadyExistsException("Username already exists.");
         }
 
-        Role userRole = roleRepository.findRoleByName("USER").get();
-
         User user = new User();
         user.setUsername(signupDto.getUsername());
         user.setPassword(passwordEncoder.encode(signupDto.getPassword()));
         user.setPhone(signupDto.getPhone());
         user.setEmail(signupDto.getEmail());
         Set<Role> roles = new HashSet<>();
+        roles.add(findUserRole());
         user.setRoles(roles);// comment
         user.setCreated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
         user.setUpdated_at(Convert.localDateTimeToLong(LocalDateTime.now()));
@@ -57,7 +56,28 @@ public class AuthService {
     }
 
 
-    public void setUserRole(UserRoleDto userRoleDto) {
+
+    private Role findAdminRole() {
+        return findRole("Admin");
+    }
+
+    private Role findUserRole() {
+        return findRole("User");
+    }
+
+    private Role findRole(String roleName) {
+        Optional<Role> optionalRole = roleRepository.findRoleByName(roleName);
+        Role role;
+        if (optionalRole.isEmpty()) {
+            role = new Role(roleName);
+            roleRepository.save(role);
+        } else {
+            role = optionalRole.get();
+        }
+        return role;
+    }
+
+    public void setUserRoleToAdmin(UserRoleDto userRoleDto) {
         Optional<User> optionalUser = userRepository.findById(userRoleDto.getUserId());
 
         if (optionalUser.isEmpty()) {
@@ -65,7 +85,10 @@ public class AuthService {
         }
 
         User user = optionalUser.get();
-        //user.setRole(userRoleDto.getRole());
+        Role adminRole = findAdminRole();
+
+        user.getRoles().add(adminRole);
+
         userRepository.save(user);
     }
 }

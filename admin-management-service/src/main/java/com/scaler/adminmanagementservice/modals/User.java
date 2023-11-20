@@ -15,10 +15,10 @@ public class User {
     @GenericGenerator(name = "idgenerator", strategy = "increment")
     private Long id;
 
-//    @Column(unique = true)
+    //    @Column(unique = true)
     private String username;
 
-//    @Column(unique = true)
+    //    @Column(unique = true)
     private String password;
 
     private String phone;

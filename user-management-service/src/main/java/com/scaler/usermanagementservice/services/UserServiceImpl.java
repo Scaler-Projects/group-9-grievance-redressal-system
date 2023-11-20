@@ -8,10 +8,10 @@ import com.scaler.usermanagementservice.models.Role;
 import com.scaler.usermanagementservice.models.User;
 import com.scaler.usermanagementservice.repositories.RoleRepository;
 import com.scaler.usermanagementservice.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private void validateAndUpdateUser(User user, UserDto userDto) throws Exception {
+    private void validateAndUpdateUser(User user, UserDto userDto) {
         if (userDto.getPhone() != null) {
             user.setPhone(userDto.getPhone());
         }

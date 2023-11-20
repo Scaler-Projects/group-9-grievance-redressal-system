@@ -1,59 +1,72 @@
 package com.scaler.usermanagementservice.services;
 
 import com.google.common.cache.Cache;
-import com.scaler.usermanagementservice.dtos.JwtResponseDto;
-import com.scaler.usermanagementservice.dtos.UserLoginRequestDto;
-import com.scaler.usermanagementservice.models.User;
-import com.scaler.usermanagementservice.repositories.UserRepository;
-import com.scaler.usermanagementservice.security.JwtUtility;
+import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Service
-public class JwtService implements UserDetailsService {
-    private final UserRepository userRepository;
+@Component
+public class JwtService {
+    private static final int TOKEN_VALIDITY = 3600 * 5 * 1000;
+    private static final SecretKey KEY = Jwts.SIG.HS256.key().build();
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private AuthenticationManager authManager;
     private final Cache<String, String> tokenCache;
+    private UserDetailsServiceImpl userDetailsService;
 
-    public JwtService(UserRepository userRepository,
-                      Cache<String, String> tokenCache) {
-        this.userRepository = userRepository;
+    public JwtService(Cache<String, String> tokenCache) {
         this.tokenCache = tokenCache;
     }
 
-    public JwtResponseDto createJwtToken(UserLoginRequestDto userLoginRequestDto) throws Exception {
-        String username = userLoginRequestDto.getUsername();
-        String password = userLoginRequestDto.getPassword();
-        authenticate(username, password);
+    @Autowired
+    public void setUserDetailsService(UserDetailsServiceImpl userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
-        final UserDetails userDetails = loadUserByUsername(username);
-        User user = userRepository.findByUsername(username).get();
-
-        String jwtToken = JwtUtility.generateToken(userDetails);
-
-        tokenCache.put(username, jwtToken);
-
-        return new JwtResponseDto(user, jwtToken);
+    @Autowired
+    public void setAuthManager(AuthenticationManager authManager) {
+        this.authManager = authManager;
     }
 
 
+    public String generateToken(UserDetails userDetails) {
+        String authorities = userDetails.getAuthorities().stream().map(
+                        GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("Authorities", authorities);
+
+        String jwtToken = Jwts.builder()
+                .subject(userDetails.getUsername())
+                .claims(claims)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY))
+                .signWith(KEY)
+                .compact();
+
+        tokenCache.put(userDetails.getUsername(), jwtToken);
+
+        return jwtToken;
+    }
+
     private void authenticate(String username, String password) throws Exception {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
         } catch (DisabledException e) {
             throw new Exception("User is disabled");
@@ -62,37 +75,27 @@ public class JwtService implements UserDetailsService {
         }
     }
 
-    public String getToken(String username) {
-        return tokenCache.getIfPresent(username);
+    public String getAuthUser(HttpServletRequest request) {
+        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (token == null) return null;
+
+        return Jwts
+                .parser()
+                .verifyWith(KEY)
+                .build()
+                .parseSignedClaims(token.substring(7))
+                .getPayload()
+                .getSubject();
+    }
+
+    // Authenticate and return a token
+    public String authenticateUser(String username, String password) throws Exception {
+        authenticate(username, password);
+        UserDetails user = userDetailsService.loadUserByUsername(username);
+        return generateToken(user);
     }
 
     public void logout(String username) {
         tokenCache.invalidate(username);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-
-        if (optionalUser.isEmpty()) {
-            throw new UsernameNotFoundException("Username is not valid");
-        }
-
-        User user = optionalUser.get();
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                getAuthorities(user)
-        );
-    }
-
-    private Set<SimpleGrantedAuthority> getAuthorities(User user) {
-        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        user.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-        });
-
-        return authorities;
     }
 }

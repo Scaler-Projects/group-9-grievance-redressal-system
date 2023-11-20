@@ -18,10 +18,10 @@ public interface AdminOperations {
     List<GenericAdminDto> getAllAdmins();
 
     @PostMapping()
-    ResponseEntity<String> createAdmin(@RequestBody AdminDto adminDto);
+    ResponseEntity<GenericAdminDto> createAdmin(@RequestBody AdminDto adminDto);
 
     @PutMapping("{id}")
-    ResponseEntity<String> updateAdmin(@PathVariable("id") Long id, @RequestBody AdminDto adminDto) throws NotFoundException;
+    ResponseEntity<GenericAdminDto> updateAdmin(@PathVariable("id") Long id, @RequestBody AdminDto adminDto) throws NotFoundException;
 
     @DeleteMapping("{id}")
     ResponseEntity<String> deleteAdminById(@PathVariable("id") Long id) throws NotFoundException;
