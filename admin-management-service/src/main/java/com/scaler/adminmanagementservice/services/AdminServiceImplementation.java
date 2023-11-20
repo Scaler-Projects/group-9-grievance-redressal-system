@@ -7,8 +7,6 @@ import com.scaler.adminmanagementservice.helper.ConvertTime;
 import com.scaler.adminmanagementservice.modals.Role;
 import com.scaler.adminmanagementservice.modals.User;
 import com.scaler.adminmanagementservice.repository.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +25,7 @@ public class AdminServiceImplementation implements AdminService {
 
     private GenericAdminDto convertToGenericAdminDto(User user) {
         GenericAdminDto genericAdminDto = new GenericAdminDto();
+        genericAdminDto.setId(user.getId());
         genericAdminDto.setEmail(user.getEmail());
         genericAdminDto.setUserName(user.getUsername());
         genericAdminDto.setPhone(user.getPhone());
@@ -42,7 +41,6 @@ public class AdminServiceImplementation implements AdminService {
         user.setUsername(adminDto.getUsername());
         user.setPhone(adminDto.getPhone());
         user.setEmail(adminDto.getEmail());
-//        user.setUpdated_at(adminDto.getUpdated_at());
         user.setCreated_at(ConvertTime.localDateTimeToLong(LocalDateTime.now()));
         user.setPassword(adminDto.getPassword());
         user.setRole(Role.ADMIN);
@@ -66,6 +64,7 @@ public class AdminServiceImplementation implements AdminService {
 
         for (User u : users) {
             GenericAdminDto genericAdminDto = new GenericAdminDto();
+            genericAdminDto.setId(u.getId());
             genericAdminDto.setUserName(u.getUsername());
             genericAdminDto.setEmail(u.getEmail());
             genericAdminDto.setPhone(u.getPhone());
@@ -78,16 +77,17 @@ public class AdminServiceImplementation implements AdminService {
     }
 
     @Override
-    public ResponseEntity<String> createAdmin(AdminDto adminDto) {
+    public GenericAdminDto createAdmin(AdminDto adminDto) {
         User user = convertToUser(adminDto);
         userRepository.save(user);
-        return new ResponseEntity<>("Admin created successfully", HttpStatus.CREATED);
+
+        return convertToGenericAdminDto(user);
         //validation remaining for if already exist
 
     }
 
     @Override
-    public ResponseEntity<String> updateAdmin(Long id, AdminDto adminDto) throws NotFoundException {
+    public GenericAdminDto updateAdmin(Long id, AdminDto adminDto) throws NotFoundException {
         Optional<User> user = this.userRepository.findById(id);
 
         if (user.isPresent()) {
@@ -97,24 +97,25 @@ public class AdminServiceImplementation implements AdminService {
             newUser.setEmail(adminDto.getEmail());
             newUser.setPhone(adminDto.getPhone());
             newUser.setUpdated_at(ConvertTime.localDateTimeToLong(LocalDateTime.now()));
-//          newUser.setCreated_at(adminDto.getCreated_at());
+
             this.userRepository.save(newUser);
-            return new ResponseEntity<>("Updated successfully", HttpStatus.OK);
+
+            return convertToGenericAdminDto(newUser);
         }
         throw new NotFoundException("Admin with id: " + id + " not found to update");
-        
+
 //        Validation remaining for if perticular value already exist
 
 
     }
 
     @Override
-    public ResponseEntity<String> deleteAdmninById(Long id) throws NotFoundException {
+    public String deleteAdmninById(Long id) throws NotFoundException {
         Optional<User> user = userRepository.findById(id);
 
         if (user.isPresent()) {
             userRepository.deleteById(id);
-            return new ResponseEntity<>("Admin with id: " + id + " deleted", HttpStatus.OK);
+            return ("Admin with id: " + id + " deleted successfully");
         }
         throw new NotFoundException("Admin with id: " + id + " doesn't exist");
     }

@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GenericAdminDto {
+    private Long id;
     private String userName;
     private String email;
     private Long createdAt;

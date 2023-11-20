@@ -4,6 +4,7 @@ import com.scaler.adminmanagementservice.dtos.AdminDto;
 import com.scaler.adminmanagementservice.dtos.GenericAdminDto;
 import com.scaler.adminmanagementservice.exceptions.NotFoundException;
 import com.scaler.adminmanagementservice.services.AdminService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ public class AdminController implements AdminOperations {
         this.adminService = adminService;
     }
 
+
     @Override
     public GenericAdminDto getAdminById(Long id) throws NotFoundException {
         return adminService.getAdminById(id);
@@ -28,17 +30,17 @@ public class AdminController implements AdminOperations {
     }
 
     @Override
-    public ResponseEntity<String> createAdmin(AdminDto adminDto) {
-        return adminService.createAdmin(adminDto);
+    public ResponseEntity<GenericAdminDto> createAdmin(AdminDto adminDto) {
+        return new ResponseEntity<>(adminService.createAdmin(adminDto), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<String> updateAdmin(Long id, AdminDto adminDto) throws NotFoundException {
-        return adminService.updateAdmin(id, adminDto);
+    public ResponseEntity<GenericAdminDto> updateAdmin(Long id, AdminDto adminDto) throws NotFoundException {
+        return new ResponseEntity<>(adminService.updateAdmin(id, adminDto), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<String> deleteAdminById(Long id) throws NotFoundException {
-        return adminService.deleteAdmninById(id);
+        return new ResponseEntity<>(adminService.deleteAdmninById(id), HttpStatus.NO_CONTENT);
     }
 }
