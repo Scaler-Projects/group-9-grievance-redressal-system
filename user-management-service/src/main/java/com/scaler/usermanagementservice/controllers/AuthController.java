@@ -3,6 +3,7 @@ package com.scaler.usermanagementservice.controllers;
 import com.scaler.usermanagementservice.dtos.*;
 import com.scaler.usermanagementservice.services.AuthService;
 import com.scaler.usermanagementservice.services.JwtService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@RequestBody UserSignupRequestDto request) throws Exception {
+    public ResponseEntity<UserDto> signup(@RequestBody UserSignupRequestDto request) {
         UserDto userDto = this.authService.signup(request);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
@@ -35,14 +36,21 @@ public class AuthController {
     }
 
     @PostMapping({"/login"})
-    public JwtResponseDto login(@RequestBody UserLoginRequestDto request) throws Exception {
-        return this.jwtService.createJwtToken(request);
+    public ResponseEntity<?> login(@RequestBody UserLoginRequestDto request) throws Exception {
+        String token = this.jwtService.authenticateUser(request.getUsername(), request.getPassword());
+
+        if (token == null) return ResponseEntity.badRequest().build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + token);
+
+        return new ResponseEntity<>(headers, HttpStatus.OK);
     }
 
-    @PostMapping({"/setUserRole"})
+    @PostMapping({"/setUserRoleToAdmin"})
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Void> setUserRole(@RequestBody UserRoleDto userRoleDto) {
-        authService.setUserRole(userRoleDto);
+    public ResponseEntity<Void> setUserRoleToAdmin(@RequestBody UserRoleDto userRoleDto) {
+        authService.setUserRoleToAdmin(userRoleDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
